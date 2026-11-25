@@ -2854,6 +2854,7 @@ img.gi{object-fit:contain;display:inline-block;vertical-align:middle;filter:drop
 .gde-gift{color:#fff;background:rgba(18,8,36,.72);border:1px solid rgba(196,140,255,.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .gde-gift b{color:#E4BEFF}
 .gde-ht p{color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.85)}
+#coach #nextC{white-space:nowrap;padding-inline:10px}
 .sec-h .h2::before{background:linear-gradient(180deg,#3FE0FF,#B57BFF 55%,#FF4FD8) !important}
 </style>
 </head>
@@ -7879,7 +7880,11 @@ function drawCoach(){
   let ring = "";
   let cardPos = "top:120px";
   if(el){
-    const r = el.getBoundingClientRect();
+    let r = el.getBoundingClientRect();
+    if(r.top < host.top || r.bottom > host.bottom){
+      el.style.scrollMarginTop = Math.round(host.height * .18) + "px";
+      el.scrollIntoView({ block:"start", behavior:"instant" }); r = el.getBoundingClientRect();
+    }
     const t = r.top - host.top, l = r.left - host.left;
     ring = `<div class="ring" style="left:${l - 6}px;top:${t - 6}px;width:${r.width + 12}px;height:${r.height + 12}px"></div>`;
     cardPos = (t > host.height * 0.5) ? `bottom:${host.height - t + 18}px` : `top:${t + r.height + 18}px`;
@@ -7896,11 +7901,15 @@ function drawCoach(){
           ${coachI === COACH.length - 1 ? (S.coachXp ? "开始体验" : `开始体验 · +${XPR.coach} 亲密`) : "下一步"}</button>
       </div>
     </div>`;
+  const cc = $("#coach .cc"), cr = cc.getBoundingClientRect();
+  if(cr.bottom > host.bottom - 12 || cr.top < host.top + 12)
+    cc.style.cssText = `top:${Math.max(12, Math.min(host.height - cr.height - 12, cr.top - host.top))}px`;
   $("#skip").onclick = () => endCoach(false);
   $("#nextC").onclick = () => { if(coachI === COACH.length - 1) endCoach(true); else { coachI++; drawCoach(); } };
 }
 function endCoach(finished){
   $("#coach").classList.remove("on"); $("#coach").setAttribute("aria-hidden","true"); $("#coach").innerHTML = "";
+  $("#stage").scrollTo({ top:0, behavior:"instant" });
   S.coached = true; save();
   if(finished && !S.coachXp){
     S.coachXp = true; save();
